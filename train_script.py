@@ -60,6 +60,12 @@ def train(args):
 
                 print(error)
                 print("Valid_error=%f;" % (error))
+    save_model(model, args.model_dir)
+
+def save_model(model, model_dir):
+    path = os.path.join(model_dir, 'model.pth') # use with save_model(model, args.model_dir)
+    # recommended way from http://pytorch.org/docs/master/notes/serialization.html
+    torch.save(model.cpu().state_dict(), path)
 
 
 if __name__ == '__main__':
@@ -68,6 +74,7 @@ if __name__ == '__main__':
                         help='arg for testing parser')
     parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_STOCKDATA'),
                         help='data directory path')
+    parser.add_argument('--model-dir', type=str, default=os.environ['SM_MODEL_DIR'])
     parser.add_argument('--X_train_file', type=str) # no default to test argument are well given
     parser.add_argument('--y_train_file', type=str, default='X_train.npy')
     parser.add_argument('--X_test_file', type=str, default='X_test.npy')
