@@ -59,6 +59,7 @@ def train(args):
                     error += np.abs(y_test[j] - output.cpu().detach().numpy())
 
                 print(error)
+                print("Valid_error=%f;" % (error))
 
 
 if __name__ == '__main__':
