@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 from modeles_library import my_lstm
 import random
+import os
 
 
 def train(args):
@@ -12,10 +13,10 @@ def train(args):
     cuda = torch.cuda.is_available()
     print("cuda:", cuda)
 
-    X_train = np.load('X_train.npy')
-    y_train = np.load('y_train.npy')
-    X_test = np.load('X_test.npy')
-    y_test = np.load('y_test.npy')
+    X_train = np.load(os.path.join(args.data_dir, args.X_train_file))
+    y_train = np.load(os.path.join(args.data_dir, args.y_train_file))
+    X_test = np.load(os.path.join(args.data_dir, args.X_test_file))
+    y_test = np.load(os.path.join(args.data_dir, args.y_test_file))
 
     embedding_size = 1
     hidden_dim = 10
@@ -64,4 +65,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--try_arg', type=int, default=64, metavar='N',
                         help='arg for testing parser')
+    parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_STOCKDATA'),
+                        help='data directory path')
+    parser.add_argument('--X_train_file', type=str) # no default to test argument are well given
+    parser.add_argument('--y_train_file', type=str, default='X_train.npy')
+    parser.add_argument('--X_test_file', type=str, default='X_test.npy')
+    parser.add_argument('--y_test_file', type=str, default='y_test.npy')
     train(parser.parse_args())
