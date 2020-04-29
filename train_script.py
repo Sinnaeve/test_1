@@ -18,10 +18,13 @@ def train(args):
     X_test = np.load(os.path.join(args.data_dir, args.X_test_file))
     y_test = np.load(os.path.join(args.data_dir, args.y_test_file))
 
-    embedding_size = 1
-    hidden_dim = 10
-    target_size = 1
-    num_layers = 1
+    embedding_size = args.embedding_size
+    hidden_dim = args.hidden_dim
+    target_size = args.target_size
+    num_layers = args.num_layers
+    epochs = args.epochs
+
+    print("train on", epochs, "epoch, ", "with hidden dim =", hidden_dim)
 
     model = my_lstm(embedding_size, hidden_dim, target_size, num_layers=num_layers)
     loss_function = nn.L1Loss()
@@ -30,7 +33,8 @@ def train(args):
     if cuda:
         model.cuda()
 
-    for epoch in range(2):
+    for epoch in range(epochs):
+        print("epoch:", epoch)
         train_set = list(zip(X_train, y_train))
         random.shuffle(train_set)
         for i, (seq, label) in enumerate(train_set):
@@ -47,9 +51,9 @@ def train(args):
             loss.backward()
             optimizer.step()
 
-            if i % 200 == 0:
-                error = 0
-                for k in range(1000):
+
+        error = 0
+        for k in range(1000):
                     j = np.random.randint(0, len(y_test))
                     if cuda:
                         t_seq_test = torch.from_numpy(X_test[j]).cuda()
@@ -58,8 +62,7 @@ def train(args):
                     output = model(t_seq_test)
                     error += np.abs(y_test[j] - output.cpu().detach().numpy())
 
-                print(error)
-                print("Valid_error=%f;" % (error))
+        print("Valid_error=%f;" % (error))
     save_model(model, args.model_dir)
 
 def save_model(model, model_dir):
@@ -75,8 +78,14 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_STOCKDATA'),
                         help='data directory path')
     parser.add_argument('--model-dir', type=str, default=os.environ['SM_MODEL_DIR'])
-    parser.add_argument('--X_train_file', type=str) # no default to test argument are well given
-    parser.add_argument('--y_train_file', type=str, default='X_train.npy')
+    parser.add_argument('--X_train_file', type=str, default='X_train.npy') # no default to test argument are well given
+    parser.add_argument('--y_train_file', type=str, default='y_train.npy')
     parser.add_argument('--X_test_file', type=str, default='X_test.npy')
     parser.add_argument('--y_test_file', type=str, default='y_test.npy')
+    parser.add_argument('--embedding_size', type=int, default=1)
+    parser.add_argument('--hidden_dim', type=int, default=1)
+    parser.add_argument('--target_size', type=int, default=1)
+    parser.add_argument('--num_layers', type=int, default=1)
+    parser.add_argument('--epochs', type=int, default=1)
+
     train(parser.parse_args())
